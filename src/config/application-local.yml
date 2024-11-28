@@ -1,0 +1,5 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/diary
+    username: [USER_NAME]
+    password: [USER_PASSWORD]

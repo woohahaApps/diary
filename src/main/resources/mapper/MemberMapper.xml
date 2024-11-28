@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.woohahaapps.study.diary.mapper.MemberMapper">
+    <insert id="CreateMember" parameterType="Member">
+        insert into member (email, password, name, role, provider, uid)
+        values (#{email}, #{password}, #{name}, #{role}, #{provider}, #{uid});
+    </insert>
+    <select id="GetMember" resultType="Member">
+        select
+            *
+        from member
+        where email=#{email};
+    </select>
+    <select id="GetMemberByUserId" resultType="Member">
+        select
+            *
+        from member
+        where
+            uid = #{uid};
+    </select>
+    <update id="UpdateMember" parameterType="Member">
+        update member
+        set
+            password = #{password}
+            , name = #{name}
+            , role = #{role}
+            , provider = #{provider}
+            , uid = #{uid}
+        where
+            email = #{email};
+    </update>
+    <delete id="DeleteMember">
+        delete from member
+        where
+            email = #{email};
+    </delete>
+    <select id="GetAllMembers" resultType="Member">
+        select
+            *
+        from member
+        order by
+            email
+    </select>
+</mapper>
