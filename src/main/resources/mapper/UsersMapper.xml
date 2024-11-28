@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.woohahaapps.study.diary.mapper.UsersMapper">
+    <insert id="CreateUsers" useGeneratedKeys="true" keyColumn="id" keyProperty="id" parameterType="Users">
+        insert into users (provider_user_id, provider, email, name, profile_image_url)
+        values (#{provider_user_id}, #{provider}, #{email}, #{name}, #{profile_image_url});
+    </insert>
+    <select id="GetUsers" resultType="Users">
+        select
+            *
+        from users
+        where
+            provider_user_id = #{provider_user_id}
+            and provider = #{provider}
+    </select>
+</mapper>

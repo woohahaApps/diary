@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# 이 스크립트는 postgres 계정으로 실행된다.
+
+# 변수 선언
+DB_NAME="diary"
+BACKUP_ROOT_DIR="/tmp/pg_backup/$DB_NAME"
+DATE_ONLY=$(date +"%Y%m%d")  # 날짜만 포함
+TIME_ONLY=$(date +"%H%M%S")  # 백업 시각
+MAX_RETRIES=5
+RETRY_INTERVAL=10
+retry_count=0
+
+echo "Checking if PostgreSQL server is running..."
+while ! pg_isready -U postgres -h localhost -p 5432; do
+    if [ "$retry_count" -ge "$MAX_RETRIES" ]; then
+        echo "PostgreSQL server is not running after $MAX_RETRIES attempts. Exiting backup process."
+        exit 1
+    fi
+    
+    if [ "$retry_count" -eq 0 ]; then
+        echo "Starting PostgreSQL service..."
+        systemctl start postgresql
+    fi
+    
+    echo "PostgreSQL server is not ready. Retrying in $RETRY_INTERVAL seconds... (Attempt $((retry_count + 1))/$MAX_RETRIES)"
+    sleep "$RETRY_INTERVAL"
+    retry_count=$((retry_count + 1))
+done
+
+echo "PostgreSQL server is running. Proceeding with backup."
+
+# 기존 백업 디렉토리가 존재하면 삭제 후 작업
+if [ -d "$BACKUP_ROOT_DIR" ]; then
+    echo "Removing existing backup directory: $BACKUP_ROOT_DIR"
+    rm -rf "$BACKUP_ROOT_DIR"
+fi
+
+# 새 백업 디렉터리 생성
+mkdir -p "$BACKUP_ROOT_DIR/$DATE_ONLY"
+# chown postgres:postgres "$BACKUP_ROOT_DIR/$DATE_ONLY"
+
+# 백업을 수행함
+BACKUP_FILE="$BACKUP_ROOT_DIR/$DATE_ONLY/${DB_NAME}_${TIME_ONLY}.sql"
+# sudo -u postgres pg_dump -F plain --clean --if-exists -d $DB_NAME -f "$BACKUP_FILE"
+pg_dump -F plain --clean --if-exists -d $DB_NAME -f "$BACKUP_FILE"
+
+# 백업 성공 여부 확인
+if [ $? -ne 0 ]; then
+    echo "Backup failed. Exiting script."
+    exit 1
+fi
+
+echo "$DB_NAME backuped to file: $BACKUP_FILE"
+
+# 백업 파일 압축
+BACKUP_ARCHIVE="$BACKUP_ROOT_DIR/$DATE_ONLY/${DB_NAME}_${TIME_ONLY}.tar.gz"
+tar -czvf "$BACKUP_ARCHIVE" -C "$BACKUP_ROOT_DIR/$DATE_ONLY" "${DB_NAME}_${TIME_ONLY}.sql"
+echo "Backup file compressed to $BACKUP_ARCHIVE"
+
+# 압축파일을 remote 서버로 이동
+ssh woohaha@10.10.1.32 "mkdir -p /data/backup/$DATE_ONLY"
+scp $BACKUP_ARCHIVE woohaha@10.10.1.32:/data/backup/$DATE_ONLY/
+echo "Copied to remote backup server"

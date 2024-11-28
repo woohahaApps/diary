@@ -1,0 +1,15 @@
+[Unit]
+Description=Diary Web Program
+After=syslog.target network.target
+
+[Service]
+#Type=simple
+User=root
+Group=root
+ExecStart=/usr/bin/java -Xms128m -Xmx256m -jar /var/webapp/diary/study.diary.jar --spring.config.additional-location=/var/webapp/diary/application-prod.yml
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+Alias=diary.service

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.woohahaapps.study.diary.mapper.DiaryMapper">
+<!--    <insert id="CreateDiary">-->
+<!--        insert into diary (diary_date, diary_content, email) values (DATE(#{date}), #{content}, #{email});-->
+<!--    </insert>-->
+<!--    <insert id="CreateDiary" parameterType="com.woohahaapps.study.diary.domain.Diary">-->
+    <insert id="CreateDiary" parameterType="Diary">
+        insert into diary (diary_date, diary_content, email)
+        values (DATE(#{diary_date}), #{diary_content}, #{email});
+    </insert>
+    <select id="GetDiary" resultType="Diary">
+        select
+            *
+        from diary
+        where id=#{id};
+    </select>
+<!--    <update id="UpdateDiary">-->
+<!--        update diary-->
+<!--        set-->
+<!--            diary_date = DATE(#{diary_date})-->
+<!--          , diary_content = #{diary_content}-->
+<!--        where-->
+<!--            id = #{id};-->
+<!--    </update>-->
+    <update id="UpdateDiary" parameterType="Diary">
+        update diary
+        set
+            diary_date = DATE(#{diary_date})
+          , diary_content = #{diary_content}
+        where
+            id = #{id};
+    </update>
+    <delete id="DeleteDiary">
+        delete from diary
+        where
+            id = #{id};
+    </delete>
+<!--    <select id="GetAllDiaries" resultType="hashmap">-->
+    <select id="GetAllDiaries" resultType="Diary">
+        select
+            *
+        from diary
+        where
+            email = #{email}
+        order by
+            diary_date desc
+            , id desc
+    </select>
+</mapper>
